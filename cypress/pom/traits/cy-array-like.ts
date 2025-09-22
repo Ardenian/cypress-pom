@@ -1,12 +1,15 @@
 interface IConstructor<T> {
-  new (): T;
+  new (hostSelector: string): T;
 
   // Or enforce default constructor
   // new (): T;
 }
 
-function activator<T extends CyArrayLikeElement>(type: IConstructor<T>): T {
-  return new type();
+function activator<T extends CyArrayLikeElement>(
+  type: IConstructor<T>,
+  hostSelector: string
+): T {
+  return new type(hostSelector);
 }
 
 interface CyArrayLikeElement {
@@ -14,8 +17,10 @@ interface CyArrayLikeElement {
 }
 
 class Test implements CyArrayLikeElement {
-  selector: string = "";
-  constructor() {}
+  public selector: string;
+  constructor(hostSelector: string) {
+    this.selector = hostSelector;
+  }
 }
 
 export class CyArrayLike<T extends CyArrayLikeElement> {
@@ -35,4 +40,4 @@ export class CyArrayLike<T extends CyArrayLikeElement> {
   // }
 }
 
-const arrayLike: Test = activator<Test>(Test);
+const arrayLike: Test = activator<Test>(Test, "test");
