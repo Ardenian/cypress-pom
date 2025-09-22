@@ -5,10 +5,7 @@ interface IConstructor<T> {
   // new (): T;
 }
 
-function activator<T extends CyArrayLikeElement>(
-  type: IConstructor<T>,
-  hostSelector: string
-): T {
+function activator<T>(type: IConstructor<T>, hostSelector: string): T {
   return new type(hostSelector);
 }
 
