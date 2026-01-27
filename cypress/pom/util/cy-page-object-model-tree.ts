@@ -1,6 +1,6 @@
-class Base<SELECTOR extends string = string> {
+class Base {
   public readonly selector: string;
-  constructor(selector: SELECTOR, context?: string, filter?: string) {
+  constructor(selector: string, context?: string, filter?: string) {
     this.selector = `${context ?? ""} ${selector}${filter ?? ""}`;
   }
 }
@@ -48,10 +48,7 @@ function button<SELECTOR extends string>(
   };
 }
 
-function list<SELECTOR extends string, M extends Base<SELECTOR>>(
-  selector: string,
-  ctor: Constructor<M>,
-) {
+function list<M extends Base>(selector: string, ctor: Constructor<M>) {
   return class extends Base {
     constructor(context?: string) {
       super(selector, context);
@@ -98,7 +95,7 @@ function createPageObjectModelTree<SCHEMA extends Schema>(
 ): PageObjectTreeFromSchema<SCHEMA> {
   const result: any = {};
   for (const key of Object.keys(schema)) {
-    const def = schema[key as keyof SCHEMA] as any;
+    const def = schema[key as keyof SCHEMA];
     let ctor: Constructor;
     let children: Schema | undefined;
 
@@ -106,18 +103,17 @@ function createPageObjectModelTree<SCHEMA extends Schema>(
       ctor = def.type;
       children = def.children;
     } else {
-      ctor = def as Constructor;
+      ctor = def;
     }
 
     const instance = new ctor(parentContext);
-    const node: any = instance;
 
     if (children) {
       const childNodes = createPageObjectModelTree(children, instance.selector);
-      Object.assign(node, childNodes);
+      Object.assign(instance, childNodes);
     }
 
-    result[key] = node;
+    result[key] = instance;
   }
   return result as PageObjectTreeFromSchema<SCHEMA>;
 }
@@ -150,6 +146,7 @@ const modelTree = createPageObjectModelTree({
   console.log(testButton.selector);
   testButton.click(); // Logs "Clicked on button with selector: button-selector"
   otherButton.name.hello();
+  console.log(type.selector);
 
   modelTree.list.first().click(); // Logs "Clicked on button with selector: button-of-list:first"
   console.log(modelTree.list.first().selector);
