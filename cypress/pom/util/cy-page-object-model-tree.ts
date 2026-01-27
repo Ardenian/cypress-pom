@@ -80,6 +80,18 @@ function container<S extends string, SCHEMA extends Schema>(
   };
 }
 
+function dialog<S extends string, SCHEMA extends Schema>(
+  selector: S,
+  content?: SCHEMA,
+) {
+  return container(selector, {
+    confirmButton: button("confirm-button"),
+    cancelButton: button("cancel-button"),
+    closeButton: button("close-button"),
+    ...content,
+  });
+}
+
 // Factory types
 type Constructor<MODEL extends Base = Base> = new (
   context?: string,
@@ -160,6 +172,10 @@ const modelTree = createPageObjectModelTree({
     innerButton: button("inner-button-selector"),
     innerType: Type,
   }),
+  dialogBox: dialog("dialog-selector", {
+    extraButton: button("extra-button-selector"),
+    list: list("dialog-button-list", button("dialog-button-of-list")),
+  }),
 });
 
 {
@@ -176,4 +192,8 @@ const modelTree = createPageObjectModelTree({
   console.log(modelTree.list.first().selector);
   modelTree.container.innerButton.click();
   console.log(modelTree.container.innerButton.selector);
+
+  modelTree.dialogBox.confirmButton.click();
+  modelTree.dialogBox.extraButton.click();
+  modelTree.dialogBox.list.first().click();
 }
