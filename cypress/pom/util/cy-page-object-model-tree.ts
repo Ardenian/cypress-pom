@@ -37,6 +37,12 @@ class Button<S extends string> extends Base {
   }
 }
 
+class Container<S extends string> extends Base {
+  constructor(selector: S, context?: string, filter?: string) {
+    super(selector, context, filter);
+  }
+}
+
 function button<SELECTOR extends string>(
   selector: SELECTOR,
 ): Constructor<Button<SELECTOR>> {
@@ -57,6 +63,20 @@ function list<M extends Base>(selector: string, ctor: Constructor<M>) {
     public first(): M {
       return new ctor(this.selector, ":first");
     }
+  };
+}
+
+function container<S extends string, SCHEMA extends Schema>(
+  selector: S,
+  schema: SCHEMA,
+): { type: Constructor; children: SCHEMA } {
+  return {
+    type: class extends Container<S> {
+      constructor(_context?: string, _filter?: string) {
+        super(selector);
+      }
+    },
+    children: schema,
   };
 }
 
@@ -136,6 +156,10 @@ const modelTree = createPageObjectModelTree({
     type: button("other-button-selector"),
     children: { name: Name },
   },
+  container: container("container-selector", {
+    innerButton: button("inner-button-selector"),
+    innerType: Type,
+  }),
 });
 
 {
@@ -150,4 +174,6 @@ const modelTree = createPageObjectModelTree({
 
   modelTree.list.first().click(); // Logs "Clicked on button with selector: button-of-list:first"
   console.log(modelTree.list.first().selector);
+  modelTree.container.innerButton.click();
+  console.log(modelTree.container.innerButton.selector);
 }
