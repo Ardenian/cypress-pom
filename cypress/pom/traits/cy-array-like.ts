@@ -32,7 +32,7 @@ export class CyArrayLike<T extends CyArrayLikeElement> {
   //     .get(this.hostSelector)
   //     .eq(index)
   //     .then(($el) => {
-  //       return cy.wrap(activator<T>(typeof T));
+  //       return cy.wrap(activator<T>(T, "test"));
   //     });
   // }
 }
