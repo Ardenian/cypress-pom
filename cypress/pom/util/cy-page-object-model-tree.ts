@@ -90,10 +90,10 @@ function treeTableModel<SELECTOR extends string>(selector: SELECTOR) {
       this.selector,
     );
 
-    public readonly rows = new (class extends listModel(
+    public readonly rows = list(
       "lib-tree-table",
       treeTableRowModel("lib-tree-table-row"),
-    ) {})();
+    );
 
     constructor(context?: string) {
       super(selector, context);
@@ -101,16 +101,26 @@ function treeTableModel<SELECTOR extends string>(selector: SELECTOR) {
   };
 }
 
-function listModel<M extends Base>(selector: string, ctor: Constructor<M>) {
+function listModel<CHILD_MODEL extends Base>(
+  selector: string,
+  ctor: Constructor<CHILD_MODEL>,
+) {
   return class extends Base {
     constructor(context?: string) {
       super(selector, context);
     }
 
-    public first(): M {
+    public first(): CHILD_MODEL {
       return new ctor(this.selector, ":first");
     }
   };
+}
+
+function list<CHILD_MODEL extends Base>(
+  selector: string,
+  ctor: Constructor<CHILD_MODEL>,
+) {
+  return new (class extends listModel(selector, ctor) {})();
 }
 
 function containerModel<S extends string, SCHEMA extends Schema>(
