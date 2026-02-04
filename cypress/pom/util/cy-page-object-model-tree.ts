@@ -54,6 +54,53 @@ function button<SELECTOR extends string>(
   };
 }
 
+function treeTableExpansionToggle<SELECTOR extends string>(
+  selector: SELECTOR,
+  context?: string,
+) {
+  return class extends Base {
+    constructor() {
+      super(selector, context);
+    }
+
+    public click() {
+      console.log(`Clicked on button with selector: ${this.selector}`);
+    }
+  };
+}
+
+function treeTableRow<SELECTOR extends string>(selector: SELECTOR) {
+  return class extends Base {
+    public readonly expansionToggle =
+      new (class extends treeTableExpansionToggle(
+        "lib-tree-table-expansion-toggle",
+        this.selector,
+      ) {})();
+
+    constructor(context?: string) {
+      super(selector, context);
+    }
+  };
+}
+
+function treeTable<SELECTOR extends string>(selector: SELECTOR) {
+  return class extends Base {
+    public readonly addButton: Button<string> = new Button(
+      "add-button",
+      this.selector,
+    );
+
+    public readonly rows = new (class extends list(
+      "lib-tree-table",
+      treeTableRow("lib-tree-table-row"),
+    ) {})();
+
+    constructor(context?: string) {
+      super(selector, context);
+    }
+  };
+}
+
 function list<M extends Base>(selector: string, ctor: Constructor<M>) {
   return class extends Base {
     constructor(context?: string) {
@@ -183,6 +230,7 @@ const modelTree = createPageObjectModelTree({
     extraButton: button("extra-button-selector"),
     list: list("dialog-button-list", button("dialog-button-of-list")),
   }),
+  treeTable: treeTable("tree-table-selector"),
 });
 
 {
@@ -203,4 +251,8 @@ const modelTree = createPageObjectModelTree({
   modelTree.dialogBox.confirmButton.click();
   modelTree.dialogBox.extraButton.click();
   modelTree.dialogBox.list.first().click();
+
+  modelTree.treeTable.test; // "foo"
+  modelTree.treeTable.rows.first().expansionToggle.click();
+  modelTree.treeTable.addButton.click();
 }
