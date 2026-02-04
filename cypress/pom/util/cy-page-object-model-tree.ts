@@ -97,9 +97,19 @@ type Constructor<MODEL extends Base = Base> = new (
   context?: string,
   filter?: string,
 ) => MODEL;
+
+// child schema shape for nested nodes (reusable)
+type ChildSchema<
+  MODEL extends Base = Base,
+  CHILD_SCHEMA extends Schema = Schema,
+> = {
+  type: Constructor<MODEL>;
+  children: CHILD_SCHEMA;
+};
+
 // keep a loose Schema shape for runtime, concrete typing comes from S in generics
 type Schema = {
-  [key: string]: Constructor | { type: Constructor; children: Schema };
+  [key: string]: Constructor | ChildSchema;
 };
 
 // Node produced by the factory (generic instance type)
@@ -111,10 +121,7 @@ type PageObjectTreeNode<MODEL extends Base = Base> = MODEL & {
 type PageObjectTreeFromSchema<SCHEMA extends Schema> = {
   [CHILD in keyof SCHEMA]: SCHEMA[CHILD] extends Constructor<infer MODEL>
     ? PageObjectTreeNode<MODEL>
-    : SCHEMA[CHILD] extends {
-          type: Constructor<infer MODEL>;
-          children: infer CHILD_SCHEMA;
-        }
+    : SCHEMA[CHILD] extends ChildSchema<infer MODEL, infer CHILD_SCHEMA>
       ? PageObjectTreeNode<MODEL> &
           PageObjectTreeFromSchema<Extract<CHILD_SCHEMA, Schema>>
       : never;
