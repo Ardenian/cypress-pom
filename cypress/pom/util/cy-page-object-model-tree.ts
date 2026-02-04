@@ -84,12 +84,12 @@ function dialog<S extends string, SCHEMA extends Schema>(
   selector: S,
   content?: SCHEMA,
 ) {
-  return container(selector, {
+  const sharedDialogContent = {
     confirmButton: button("confirm-button"),
     cancelButton: button("cancel-button"),
     closeButton: button("close-button"),
-    ...content,
-  });
+  };
+  return container(selector, Object.assign(sharedDialogContent, content));
 }
 
 // Factory types
