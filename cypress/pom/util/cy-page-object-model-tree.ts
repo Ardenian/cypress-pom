@@ -160,9 +160,8 @@ type Schema = {
 };
 
 // Node produced by the factory (generic instance type)
-type PageObjectTreeNode<MODEL extends Base = Base> = MODEL & {
-  [child: string]: any;
-};
+// A node is just the instance type (no open index signature)
+type PageObjectTreeNode<MODEL extends Base = Base> = MODEL;
 
 // Map a Schema type to the resulting tree shape with preserved instance types
 type PageObjectTreeFromSchema<SCHEMA extends Schema> = {
@@ -252,7 +251,6 @@ const modelTree = createPageObjectModelTree({
   modelTree.dialogBox.extraButton.click();
   modelTree.dialogBox.list.first().click();
 
-  modelTree.treeTable.test; // "foo"
   modelTree.treeTable.rows.first().expansionToggle.click();
   modelTree.treeTable.addButton.click();
 }
