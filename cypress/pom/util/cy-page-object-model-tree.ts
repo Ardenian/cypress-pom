@@ -43,7 +43,7 @@ class Container<S extends string> extends Base {
   }
 }
 
-function button<SELECTOR extends string>(
+function buttonModel<SELECTOR extends string>(
   selector: SELECTOR,
 ): Constructor<Button<SELECTOR>> {
   return class extends Button<SELECTOR> {
@@ -54,7 +54,7 @@ function button<SELECTOR extends string>(
   };
 }
 
-function treeTableExpansionToggle<SELECTOR extends string>(
+function treeTableExpansionToggleModel<SELECTOR extends string>(
   selector: SELECTOR,
   context?: string,
 ) {
@@ -69,10 +69,10 @@ function treeTableExpansionToggle<SELECTOR extends string>(
   };
 }
 
-function treeTableRow<SELECTOR extends string>(selector: SELECTOR) {
+function treeTableRowModel<SELECTOR extends string>(selector: SELECTOR) {
   return class extends Base {
     public readonly expansionToggle =
-      new (class extends treeTableExpansionToggle(
+      new (class extends treeTableExpansionToggleModel(
         "lib-tree-table-expansion-toggle",
         this.selector,
       ) {})();
@@ -83,16 +83,16 @@ function treeTableRow<SELECTOR extends string>(selector: SELECTOR) {
   };
 }
 
-function treeTable<SELECTOR extends string>(selector: SELECTOR) {
+function treeTableModel<SELECTOR extends string>(selector: SELECTOR) {
   return class extends Base {
     public readonly addButton: Button<string> = new Button(
       "add-button",
       this.selector,
     );
 
-    public readonly rows = new (class extends list(
+    public readonly rows = new (class extends listModel(
       "lib-tree-table",
-      treeTableRow("lib-tree-table-row"),
+      treeTableRowModel("lib-tree-table-row"),
     ) {})();
 
     constructor(context?: string) {
@@ -101,7 +101,7 @@ function treeTable<SELECTOR extends string>(selector: SELECTOR) {
   };
 }
 
-function list<M extends Base>(selector: string, ctor: Constructor<M>) {
+function listModel<M extends Base>(selector: string, ctor: Constructor<M>) {
   return class extends Base {
     constructor(context?: string) {
       super(selector, context);
@@ -113,7 +113,7 @@ function list<M extends Base>(selector: string, ctor: Constructor<M>) {
   };
 }
 
-function container<S extends string, SCHEMA extends Schema>(
+function containerModel<S extends string, SCHEMA extends Schema>(
   selector: S,
   schema: SCHEMA,
 ): { type: Constructor; children: SCHEMA } {
@@ -127,16 +127,16 @@ function container<S extends string, SCHEMA extends Schema>(
   };
 }
 
-function dialog<S extends string, SCHEMA extends Schema>(
+function dialogModel<S extends string, SCHEMA extends Schema>(
   selector: S,
   content?: SCHEMA,
 ) {
   const sharedDialogContent = {
-    confirmButton: button("confirm-button"),
-    cancelButton: button("cancel-button"),
-    closeButton: button("close-button"),
+    confirmButton: buttonModel("confirm-button"),
+    cancelButton: buttonModel("cancel-button"),
+    closeButton: buttonModel("close-button"),
   };
-  return container(selector, Object.assign(sharedDialogContent, content));
+  return containerModel(selector, Object.assign(sharedDialogContent, content));
 }
 
 // Factory types
@@ -214,22 +214,22 @@ const modelTree = createPageObjectModelTree({
       nestedInterval: { type: Interval, children: { deeplyNestedType: Type } },
     },
   },
-  list: list("button-list", button("button-of-list")),
+  list: listModel("button-list", buttonModel("button-of-list")),
   type: Type,
-  testButton: button("button-selector"),
+  testButton: buttonModel("button-selector"),
   otherButton: {
-    type: button("other-button-selector"),
+    type: buttonModel("other-button-selector"),
     children: { name: Name },
   },
-  container: container("container-selector", {
-    innerButton: button("inner-button-selector"),
+  container: containerModel("container-selector", {
+    innerButton: buttonModel("inner-button-selector"),
     innerType: Type,
   }),
-  dialogBox: dialog("dialog-selector", {
-    extraButton: button("extra-button-selector"),
-    list: list("dialog-button-list", button("dialog-button-of-list")),
+  dialogBox: dialogModel("dialog-selector", {
+    extraButton: buttonModel("extra-button-selector"),
+    list: listModel("dialog-button-list", buttonModel("dialog-button-of-list")),
   }),
-  treeTable: treeTable("tree-table-selector"),
+  treeTable: treeTableModel("tree-table-selector"),
 });
 
 {
