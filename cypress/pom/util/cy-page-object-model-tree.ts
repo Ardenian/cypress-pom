@@ -43,11 +43,24 @@ class Container<S extends string> extends Base {
   }
 }
 
+function containerModel<S extends string, SCHEMA extends Schema>(
+  selector: S,
+  schema: SCHEMA,
+): { type: Constructor; children: SCHEMA } {
+  return {
+    type: class extends Container<S> {
+      constructor(_context?: string, _filter?: string) {
+        super(selector);
+      }
+    },
+    children: schema,
+  };
+}
+
 function buttonModel<SELECTOR extends string>(
   selector: SELECTOR,
 ): Constructor<Button<SELECTOR>> {
   return class extends Button<SELECTOR> {
-    // preserve the generic in the returned class type
     constructor(context?: string, filter?: string) {
       super(selector, context, filter);
     }
@@ -121,20 +134,6 @@ function list<CHILD_MODEL extends Base>(
   ctor: Constructor<CHILD_MODEL>,
 ) {
   return new (class extends listModel(selector, ctor) {})();
-}
-
-function containerModel<S extends string, SCHEMA extends Schema>(
-  selector: S,
-  schema: SCHEMA,
-): { type: Constructor; children: SCHEMA } {
-  return {
-    type: class extends Container<S> {
-      constructor(_context?: string, _filter?: string) {
-        super(selector);
-      }
-    },
-    children: schema,
-  };
 }
 
 function dialogModel<S extends string, SCHEMA extends Schema>(
