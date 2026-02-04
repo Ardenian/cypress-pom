@@ -1,6 +1,10 @@
 import { ModelConstructor, Schema } from "../util/cy-page-object-model-tree";
 import { Base } from "./base.pom";
 
+/**
+ * Container is a basic page object model that represents a container element in the DOM.
+ * It ignores its parent context for element selection in the context of test selectors.
+ */
 export class Container extends Base {
   constructor(selector: string, context?: string, filter?: string) {
     super(selector, context, filter);
