@@ -1,180 +1,27 @@
-class Base {
-  public readonly selector: string;
-  constructor(selector: string, context?: string, filter?: string) {
-    this.selector = `${context ?? ""} ${selector}${filter ?? ""}`;
-  }
-}
+import { Base } from "../primitives/base.pom";
 
-class Name extends Base {
-  constructor(context?: string) {
-    super("Name", context);
-  }
-
-  public hello() {
-    console.log("Hello");
-  }
-}
-
-class Interval extends Base {
-  constructor(context?: string) {
-    super("Interval", context);
-  }
-}
-
-class Type extends Base {
-  constructor(context?: string) {
-    super("Type", context);
-  }
-}
-
-class Button<S extends string> extends Base {
-  constructor(selector: S, context?: string, filter?: string) {
-    super(selector, context, filter);
-  }
-
-  public click() {
-    console.log(`Clicked on button with selector: ${this.selector}`);
-  }
-}
-
-class Container<S extends string> extends Base {
-  constructor(selector: S, context?: string, filter?: string) {
-    super(selector, context, filter);
-  }
-}
-
-function containerModel<S extends string, SCHEMA extends Schema>(
-  selector: S,
-  schema: SCHEMA,
-): { type: Constructor; children: SCHEMA } {
-  return {
-    type: class extends Container<S> {
-      constructor(_context?: string, _filter?: string) {
-        super(selector);
-      }
-    },
-    children: schema,
-  };
-}
-
-function buttonModel<SELECTOR extends string>(
-  selector: SELECTOR,
-): Constructor<Button<SELECTOR>> {
-  return class extends Button<SELECTOR> {
-    constructor(context?: string, filter?: string) {
-      super(selector, context, filter);
-    }
-  };
-}
-
-function treeTableExpansionToggleModel<SELECTOR extends string>(
-  selector: SELECTOR,
-  context?: string,
-) {
-  return class extends Base {
-    constructor() {
-      super(selector, context);
-    }
-
-    public click() {
-      console.log(`Clicked on button with selector: ${this.selector}`);
-    }
-  };
-}
-
-function treeTableRowModel<SELECTOR extends string>(selector: SELECTOR) {
-  return class extends Base {
-    public readonly expansionToggle =
-      new (class extends treeTableExpansionToggleModel(
-        "lib-tree-table-expansion-toggle",
-        this.selector,
-      ) {})();
-
-    constructor(context?: string) {
-      super(selector, context);
-    }
-  };
-}
-
-function treeTableModel<SELECTOR extends string>(selector: SELECTOR) {
-  return class extends Base {
-    public readonly addButton: Button<string> = new Button(
-      "add-button",
-      this.selector,
-    );
-
-    public readonly rows = list(
-      "lib-tree-table",
-      treeTableRowModel("lib-tree-table-row"),
-    );
-
-    constructor(context?: string) {
-      super(selector, context);
-    }
-  };
-}
-
-function listModel<CHILD_MODEL extends Base>(
-  selector: string,
-  ctor: Constructor<CHILD_MODEL>,
-) {
-  return class extends Base {
-    constructor(context?: string) {
-      super(selector, context);
-    }
-
-    public first(): CHILD_MODEL {
-      return new ctor(this.selector, ":first");
-    }
-  };
-}
-
-function list<CHILD_MODEL extends Base>(
-  selector: string,
-  ctor: Constructor<CHILD_MODEL>,
-) {
-  return new (class extends listModel(selector, ctor) {})();
-}
-
-function dialogModel<S extends string, SCHEMA extends Schema>(
-  selector: S,
-  content?: SCHEMA,
-) {
-  const sharedDialogContent = {
-    confirmButton: buttonModel("confirm-button"),
-    cancelButton: buttonModel("cancel-button"),
-    closeButton: buttonModel("close-button"),
-  };
-  return containerModel(selector, Object.assign(sharedDialogContent, content));
-}
-
-// Factory types
-type Constructor<MODEL extends Base = Base> = new (
+export type ModelConstructor<MODEL extends Base = Base> = new (
   context?: string,
   filter?: string,
 ) => MODEL;
 
-// child schema shape for nested nodes (reusable)
 type ChildSchema<
   MODEL extends Base = Base,
   CHILD_SCHEMA extends Schema = Schema,
 > = {
-  type: Constructor<MODEL>;
+  type: ModelConstructor<MODEL>;
   children: CHILD_SCHEMA;
 };
 
-// keep a loose Schema shape for runtime, concrete typing comes from S in generics
-type Schema = {
-  [key: string]: Constructor | ChildSchema;
+export type Schema = {
+  [key: string]: ModelConstructor | ChildSchema;
 };
 
-// Node produced by the factory (generic instance type)
-// A node is just the instance type (no open index signature)
 type PageObjectTreeNode<MODEL extends Base = Base> = MODEL;
 
 // Map a Schema type to the resulting tree shape with preserved instance types
 type PageObjectTreeFromSchema<SCHEMA extends Schema> = {
-  [CHILD in keyof SCHEMA]: SCHEMA[CHILD] extends Constructor<infer MODEL>
+  [CHILD in keyof SCHEMA]: SCHEMA[CHILD] extends ModelConstructor<infer MODEL>
     ? PageObjectTreeNode<MODEL>
     : SCHEMA[CHILD] extends ChildSchema<infer MODEL, infer CHILD_SCHEMA>
       ? PageObjectTreeNode<MODEL> &
@@ -182,15 +29,14 @@ type PageObjectTreeFromSchema<SCHEMA extends Schema> = {
       : never;
 };
 
-// make the factory generic so the return type is inferred from the schema passed in
-function createPageObjectModelTree<SCHEMA extends Schema>(
+export function createPageObjectModelTree<SCHEMA extends Schema>(
   schema: SCHEMA,
   parentContext?: string,
 ): PageObjectTreeFromSchema<SCHEMA> {
   const result: any = {};
   for (const key of Object.keys(schema)) {
     const def = schema[key as keyof SCHEMA];
-    let ctor: Constructor;
+    let ctor: ModelConstructor;
     let children: Schema | undefined;
 
     if (def && typeof def === "object" && "type" in def) {
@@ -210,56 +56,4 @@ function createPageObjectModelTree<SCHEMA extends Schema>(
     result[key] = instance;
   }
   return result as PageObjectTreeFromSchema<SCHEMA>;
-}
-
-// Example schema and created tree
-const modelTree = createPageObjectModelTree({
-  name: Name,
-  interval: {
-    type: Interval,
-    children: {
-      nestedType: Type,
-      nestedName: Name,
-      nestedInterval: { type: Interval, children: { deeplyNestedType: Type } },
-    },
-  },
-  list: listModel("button-list", buttonModel("button-of-list")),
-  type: Type,
-  testButton: buttonModel("button-selector"),
-  otherButton: {
-    type: buttonModel("other-button-selector"),
-    children: { name: Name },
-  },
-  container: containerModel("container-selector", {
-    innerButton: buttonModel("inner-button-selector"),
-    innerType: Type,
-  }),
-  dialogBox: dialogModel("dialog-selector", {
-    extraButton: buttonModel("extra-button-selector"),
-    list: listModel("dialog-button-list", buttonModel("dialog-button-of-list")),
-  }),
-  treeTable: treeTableModel("tree-table-selector"),
-});
-
-{
-  const { name, interval, type, testButton, otherButton } = modelTree;
-  name.hello(); // Logs "Hello"
-  interval.nestedName.hello(); // Logs "Hello"
-  console.log(interval.nestedInterval.deeplyNestedType.selector);
-  console.log(testButton.selector);
-  testButton.click(); // Logs "Clicked on button with selector: button-selector"
-  otherButton.name.hello();
-  console.log(type.selector);
-
-  modelTree.list.first().click(); // Logs "Clicked on button with selector: button-of-list:first"
-  console.log(modelTree.list.first().selector);
-  modelTree.container.innerButton.click();
-  console.log(modelTree.container.innerButton.selector);
-
-  modelTree.dialogBox.confirmButton.click();
-  modelTree.dialogBox.extraButton.click();
-  modelTree.dialogBox.list.first().click();
-
-  modelTree.treeTable.rows.first().expansionToggle.click();
-  modelTree.treeTable.addButton.click();
 }
