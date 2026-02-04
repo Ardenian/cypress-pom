@@ -5,7 +5,7 @@ export type ModelConstructor<MODEL extends Base = Base> = new (
   filter?: string,
 ) => MODEL;
 
-type ChildSchema<
+export type ChildSchema<
   MODEL extends Base = Base,
   CHILD_SCHEMA extends Schema = Schema,
 > = {
