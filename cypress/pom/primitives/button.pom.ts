@@ -7,7 +7,7 @@ export class Button extends Base {
   }
 
   public click() {
-    console.log(`Clicked on button with selector: ${this.selector}`);
+    this.do.click();
   }
 }
 
