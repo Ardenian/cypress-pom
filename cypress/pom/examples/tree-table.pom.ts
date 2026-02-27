@@ -1,5 +1,5 @@
 import { Base } from "../primitives/base.pom";
-import { Button, button } from "../primitives/button.pom";
+import { Button } from "../primitives/button.pom";
 import { list } from "../traits/list.pom";
 import { createPageObjectModelTree } from "../util/cy-page-object-model-tree";
 
@@ -34,9 +34,9 @@ function treeTableRowModel<SELECTOR extends string>(selector: SELECTOR) {
   };
 }
 
-function treeTableModel<SELECTOR extends string>(selector: SELECTOR) {
+export function treeTable<SELECTOR extends string>(selector: SELECTOR) {
   return class extends Base {
-    public readonly addButton: Button = button(
+    public readonly addButton: Button = new Button(
       "lib-tree-table-add-button",
       this.selector,
     );
@@ -53,7 +53,7 @@ function treeTableModel<SELECTOR extends string>(selector: SELECTOR) {
 }
 
 const modelTree = createPageObjectModelTree({
-  treeTable: treeTableModel("tree-table-selector"),
+  treeTable: treeTable("tree-table-selector"),
 });
 
 console.log(modelTree.treeTable.addButton.selector); // Outputs: tree-table-selector lib-tree-table-add-button

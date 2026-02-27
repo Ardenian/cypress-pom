@@ -1,18 +1,18 @@
-import { buttonModel } from "../primitives/button.pom";
-import { containerModel } from "../primitives/container.pom";
+import { button } from "../primitives/button.pom";
+import { container } from "../primitives/container.pom";
 import { Schema } from "../util/cy-page-object-model-tree";
 
 export function dialogModel<SCHEMA extends Schema>(
   selector: string,
   content?: SCHEMA,
 ) {
-  return containerModel(
+  return container(
     selector,
     Object.assign(
       {
-        confirmButton: buttonModel("confirm-button"),
-        cancelButton: buttonModel("cancel-button"),
-        closeButton: buttonModel("close-button"),
+        confirmButton: button("confirm-button"),
+        cancelButton: button("cancel-button"),
+        closeButton: button("close-button"),
       },
       content,
     ),

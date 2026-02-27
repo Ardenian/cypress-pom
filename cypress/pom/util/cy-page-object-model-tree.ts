@@ -5,7 +5,7 @@ export type ModelConstructor<MODEL extends Base = Base> = new (
   filter?: string,
 ) => MODEL;
 
-export type ChildSchema<
+export type ModelWithChildrenSchema<
   MODEL extends Base = Base,
   CHILD_SCHEMA extends Schema = Schema,
 > = {
@@ -14,18 +14,18 @@ export type ChildSchema<
 };
 
 export type Schema = {
-  [key: string]: ModelConstructor | ChildSchema;
+  [key: string]: ModelConstructor | ModelWithChildrenSchema;
 };
-
-type PageObjectTreeNode<MODEL extends Base = Base> = MODEL;
 
 // Map a Schema type to the resulting tree shape with preserved instance types
 type PageObjectTreeFromSchema<SCHEMA extends Schema> = {
   [CHILD in keyof SCHEMA]: SCHEMA[CHILD] extends ModelConstructor<infer MODEL>
-    ? PageObjectTreeNode<MODEL>
-    : SCHEMA[CHILD] extends ChildSchema<infer MODEL, infer CHILD_SCHEMA>
-      ? PageObjectTreeNode<MODEL> &
-          PageObjectTreeFromSchema<Extract<CHILD_SCHEMA, Schema>>
+    ? MODEL
+    : SCHEMA[CHILD] extends ModelWithChildrenSchema<
+          infer MODEL,
+          infer CHILD_SCHEMA
+        >
+      ? MODEL & PageObjectTreeFromSchema<Extract<CHILD_SCHEMA, Schema>>
       : never;
 };
 

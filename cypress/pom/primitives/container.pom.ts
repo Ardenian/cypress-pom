@@ -1,6 +1,5 @@
 import {
-  ChildSchema,
-  ModelConstructor,
+  ModelWithChildrenSchema,
   Schema,
 } from "../util/cy-page-object-model-tree";
 import { Base } from "./base.pom";
@@ -15,10 +14,10 @@ export class Container extends Base {
   }
 }
 
-export function containerModel<SCHEMA extends Schema>(
+export function container<SCHEMA extends Schema>(
   selector: string,
   schema: SCHEMA,
-): ChildSchema<Container, SCHEMA> {
+): ModelWithChildrenSchema<Container, SCHEMA> {
   return {
     type: class extends Container {
       constructor(_context?: string, _filter?: string) {
@@ -27,11 +26,4 @@ export function containerModel<SCHEMA extends Schema>(
     },
     children: schema,
   };
-}
-
-export function container<SCHEMA extends Schema>(
-  selector: string,
-  schema: SCHEMA,
-): Container {
-  return new (class extends containerModel<SCHEMA>(selector, schema).type {})();
 }

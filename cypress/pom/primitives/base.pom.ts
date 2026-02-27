@@ -22,6 +22,7 @@ export class Base {
       this.get().should(enabled ? "be.enabled" : "be.disabled"),
     disabled: (disabled: boolean = true) =>
       this.get().should(disabled ? "be.disabled" : "be.enabled"),
+    text: (text: string) => this.get().should("have.text", text),
   };
 
   public get(): CyChainable<HTMLElement> {

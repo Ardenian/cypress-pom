@@ -1,18 +1,18 @@
 import { ModelConstructor } from "../util/cy-page-object-model-tree";
 import { Base } from "./base.pom";
 
-export class Button extends Base {
+export class InputField extends Base {
   constructor(selector: string, context?: string, filter?: string) {
     super(selector, context, filter);
   }
 
-  public click() {
-    this.do.click();
+  public text(text: string) {
+    return this.expect.text(text);
   }
 }
 
-export function button(selector: string): ModelConstructor<Button> {
-  return class extends Button {
+export function inputField(selector: string): ModelConstructor<InputField> {
+  return class extends InputField {
     constructor(context?: string, filter?: string) {
       super(selector, context, filter);
     }
