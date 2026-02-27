@@ -3,7 +3,8 @@ type FileSchema = string;
 interface FolderSchema<
   CONTENT_SCHEMA extends WorkspaceElementSchema = WorkspaceElementSchema,
 > {
-  [fileOrFolderName: string]: CONTENT_SCHEMA;
+  folders?: { [fileOrFolderName: string]: CONTENT_SCHEMA };
+  files?: { [fileOrFolderName: string]: CONTENT_SCHEMA };
 }
 
 type WorkspaceElementSchema = FolderSchema | FileSchema;
@@ -11,13 +12,13 @@ type WorkspaceElementSchema = FolderSchema | FileSchema;
 interface ProjectSchema<
   CONTENT_SCHEMA extends WorkspaceElementSchema = WorkspaceElementSchema,
 > {
-  [fileOrFolderName: string]: CONTENT_SCHEMA;
+  elements: { [fileOrFolderName: string]: CONTENT_SCHEMA };
 }
 
 interface WorkspaceSchema<
   CONTENT_SCHEMA extends ProjectSchema = ProjectSchema,
 > {
-  [projectName: string]: CONTENT_SCHEMA;
+  projects: { [projectName: string]: CONTENT_SCHEMA };
 }
 
 interface E2EWorkspaceSchema {
@@ -26,22 +27,30 @@ interface E2EWorkspaceSchema {
 
 const workspaces: E2EWorkspaceSchema = {
   Cypress_Shared: {
-    ProjectA: {
-      folder: {
-        nestedFolder: {
-          File1: "file1.txt",
+    projects: {
+      ProjectA: {
+        elements: {
+          folder: {
+            folders: {
+              nestedFolder: {
+                files: { File1: "file1.txt" },
+              },
+            },
+          },
+          otherFolder: {
+            files: { SomeImage: "image.png" },
+          },
         },
-      },
-      otherFolder: {
-        SomeImage: "image.png",
       },
     },
   },
   Cypress_Personal: {
-    ProjectA: {
-      folder: {
-        nestedFolder: {
-          File1: "file1.txt",
+    projects: {
+      ProjectA: {
+        elements: {
+          folder: {
+            files: { File1: "file1.txt" },
+          },
         },
       },
     },
